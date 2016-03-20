@@ -91,6 +91,10 @@ namespace Waterfall.Libs.IntBased
                     $"Map ({typeof (TOutputMap)}) does not define work branch with UniqueIdentifier "+
                     $"value:{nextWorkIndex}");
             }
+            catch (WaterfallException)
+            {
+                throw;
+            }
             catch (Exception e)
             {
                 throw new WaterfallException(WaterfallErrorType.Unknown, "UnknownError", e);
@@ -217,17 +221,19 @@ namespace Waterfall.Libs.IntBased
 
         private static int ValidateWorkBranches(Type mapType, Type rootType)
         {
-            var fields = mapType.GetFields(BindingFlags.DeclaredOnly|BindingFlags.Static|BindingFlags.Public);
+            var fields =
+                mapType.GetFields(BindingFlags.DeclaredOnly|BindingFlags.Static|BindingFlags.Public|
+                                  BindingFlags.NonPublic);
             if (fields.Length == 0) return 0;
-            var min = -1;
-            var max = -1;
+            var min = 0;
+            var max = 0;
             var count = 0;
 
             var typeSet = new HashSet<Type> { rootType };
             foreach (var fieldInfo in fields)
             {
                 var attribute =
-                    Attribute.GetCustomAttribute(mapType, typeof (WaterfallWorkAttribute)) as WaterfallWorkAttribute;
+                    Attribute.GetCustomAttribute(fieldInfo, typeof (WaterfallWorkAttribute)) as WaterfallWorkAttribute;
 
                 if (attribute == null) continue;
 
@@ -247,7 +253,7 @@ namespace Waterfall.Libs.IntBased
                 }
                 if (!typeSet.Add(attribute.WorkType))
                 {
-                    throw new WaterfallException(WaterfallErrorType.CyclicRedundancyDetected,
+                    throw new WaterfallException(WaterfallErrorType.RedundancyDetected,
                         $"WorkType ({attribute.WorkType.FullName}) defined on at least 2 map fields.");
                 }
 
@@ -278,10 +284,10 @@ namespace Waterfall.Libs.IntBased
             var mapType = typeof (TOutputMap);
 
             foreach (
-                var fieldInfo in mapType.GetFields(BindingFlags.DeclaredOnly|BindingFlags.Static|BindingFlags.Public))
+                var fieldInfo in mapType.GetFields(BindingFlags.DeclaredOnly|BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic))
             {
                 var attribute =
-                    Attribute.GetCustomAttribute(mapType, typeof (WaterfallWorkAttribute)) as WaterfallWorkAttribute;
+                    Attribute.GetCustomAttribute(fieldInfo, typeof (WaterfallWorkAttribute)) as WaterfallWorkAttribute;
                 if (attribute == null) continue;
 
                 if (attribute.WorkType.GetConstructor(Type.EmptyTypes) == null)

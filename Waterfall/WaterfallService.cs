@@ -6,7 +6,7 @@ using Waterfall.Base;
 namespace Waterfall
 {
     /// <summary>
-    /// This class is to prepare a solution wide lifetime service which executes
+    /// A wrapper class is to prepare a solution wide lifetime service which executes
     /// waterfalls asynchronously or on thread pool threads.
     /// </summary>
     /// <typeparam name="TInput">Type of Input parameter of the waterfall.</typeparam>
@@ -27,13 +27,13 @@ namespace Waterfall
         }
 
         /// <summary>
-        /// Executes the workflow work asynchronously (async-await pattern).
+        /// Executes the workflow work as a task. Thus, you can use async-await feature.
         /// </summary>
         /// <param name="input">Input instance</param>
         /// <param name="result">Result instance</param>
-        public async Task ExecuteAsync(TInput input, TResult result)
+        public Task ExecuteAsync(TInput input, TResult result)
         {
-            await Task.Run(() => _waterfall.Execute(input, result));
+            return Task.Factory.StartNew(() => _waterfall.Execute(input, result));
         }
 
         /// <summary>

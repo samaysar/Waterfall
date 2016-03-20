@@ -72,7 +72,7 @@ namespace Waterfall.Base
         /// <summary>
         /// When redundancy is identified during construction time
         /// </summary>
-        CyclicRedundancyDetected
+        RedundancyDetected
     }
 
     /// <summary>

@@ -95,6 +95,10 @@ namespace Waterfall.Libs.EnumBased
                     $"Map ({typeof (TOutputEnum)}) does not define work branch with UniqueIdentifier"+
                     $" value:{nextWorkIndex}");
             }
+            catch (WaterfallException)
+            {
+                throw;
+            }
             catch (Exception e)
             {
                 throw new WaterfallException(WaterfallErrorType.Unknown, "UnknownError", e);
@@ -230,7 +234,7 @@ namespace Waterfall.Libs.EnumBased
             var minValue = intArray.Min();
             var maxValue = intArray.Max();
 
-            if (minValue != 0)
+            if (minValue != -1)
                 throw new WaterfallException(WaterfallErrorType.EnumDoesNotDefineEndOfWaterfallAsMinusOne,
                     $"Map ({mapType.FullName}) ActualMinValue:{minValue},EnumName"+
                     $":{Enum.GetName(typeof(TOutputEnum), minValue)}.");
@@ -238,21 +242,30 @@ namespace Waterfall.Libs.EnumBased
                 throw new WaterfallException(WaterfallErrorType.EnumValuesAreNotContinuouslyIncreasing,
                     $"Map ({mapType.FullName}) ExpectedEnumCount:{maxValue + 2},ActualEnumCount:{intArray.Length}");
 
-            var fields = mapType.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public);
+            var fields =
+                mapType.GetFields(BindingFlags.DeclaredOnly|BindingFlags.Static|BindingFlags.Public|
+                                  BindingFlags.NonPublic);
             var endOfWaterfallEnum = Enum.Parse(mapType, "-1");
             var typeSet = new HashSet<Type> {rootType};
 
             foreach (var fieldInfo in fields)
             {
                 var attribute =
-                    Attribute.GetCustomAttribute(mapType, typeof(WaterfallWorkAttribute)) as WaterfallWorkAttribute;
+                    Attribute.GetCustomAttribute(fieldInfo, typeof(WaterfallWorkAttribute)) as WaterfallWorkAttribute;
+                var enumVal = fieldInfo.GetValue(null);
                 if (attribute == null)
                 {
-                    if (!fieldInfo.GetValue(null).Equals(endOfWaterfallEnum))
+                    if (!enumVal.Equals(endOfWaterfallEnum))
                         throw new WaterfallException(WaterfallErrorType.InvalidWaterfallMap,
                             $"In Map ({mapType.FullName}) except -1 enum, all values must define"+
-                            $" {typeof(WaterfallWorkAttribute).Name}. Attribute undefined for {fieldInfo.GetValue(null)}.");
+                            $" {typeof (WaterfallWorkAttribute).Name}. Attribute undefined for {enumVal}.");
                     continue;
+                }
+                if (enumVal.Equals(endOfWaterfallEnum))
+                {
+                    throw new WaterfallException(WaterfallErrorType.InvalidWaterfallMap,
+                        $"In Map ({mapType.FullName}) enum with value -1 defines"+
+                        $" {typeof (WaterfallWorkAttribute).Name}. However, no work should be defined for this value.");
                 }
                 if (attribute.WorkType == null)
                     throw new WaterfallException(WaterfallErrorType.WaterfallAttributeSuppliedTypeIsNull,
@@ -268,7 +281,7 @@ namespace Waterfall.Libs.EnumBased
                 }
                 if (!typeSet.Add(attribute.WorkType))
                 {
-                    throw new WaterfallException(WaterfallErrorType.CyclicRedundancyDetected,
+                    throw new WaterfallException(WaterfallErrorType.RedundancyDetected,
                         $"WorkType ({attribute.WorkType.FullName}) defined on at least 2 enum members.");
                 }
             }
@@ -283,10 +296,10 @@ namespace Waterfall.Libs.EnumBased
             var mapType = typeof(TOutputEnum);
 
             foreach (
-                var fieldInfo in mapType.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public))
+                var fieldInfo in mapType.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public|BindingFlags.NonPublic))
             {
                 var attribute =
-                    Attribute.GetCustomAttribute(mapType, typeof(WaterfallWorkAttribute)) as WaterfallWorkAttribute;
+                    Attribute.GetCustomAttribute(fieldInfo, typeof(WaterfallWorkAttribute)) as WaterfallWorkAttribute;
                 if (attribute == null) continue;
 
                 if (attribute.WorkType.GetConstructor(Type.EmptyTypes) == null)

@@ -59,9 +59,9 @@ namespace Waterfall.Builders
         /// <param name="result">result instance</param>
         public void Execute(TInput input, TResult result)
         {
-            foreach (var current in _waterfall)
+            for (var i = 0; i<_waterfall.Length; i++)
             {
-                current.Execute(input, result);
+                _waterfall[i].Execute(input, result);
             }
         }
     }

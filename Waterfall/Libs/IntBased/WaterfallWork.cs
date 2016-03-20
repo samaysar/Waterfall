@@ -3,7 +3,7 @@
 namespace Waterfall.Libs.IntBased
 {
     /// <summary>
-    /// Interface to be implemented by any int map based waterfall-work.
+    /// Abstract class to be implemented by any int map based waterfall-work.
     /// </summary>
     /// <typeparam name="TContext">Type of context dependency</typeparam>
     /// <typeparam name="TInput">Type of input parameter</typeparam>

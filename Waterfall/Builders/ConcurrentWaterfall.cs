@@ -63,7 +63,7 @@ namespace Waterfall.Builders
         /// <param name="result">result instance</param>
         public void Execute(TInput input, TResult result)
         {
-            Parallel.ForEach(_waterfall, current => current.Execute(input, result));
+            Parallel.For(0, _waterfall.Length, i => _waterfall[i].Execute(input, result));
         }
     }
 }
