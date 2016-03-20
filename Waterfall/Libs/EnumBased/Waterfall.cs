@@ -118,7 +118,7 @@ namespace Waterfall.Libs.EnumBased
 #endif
         }
 
-        private static Dictionary<int, WaterfallStats> Statistics(IReadOnlyList<WaterfallStats> stats)
+        private static Dictionary<int, WaterfallStats> Statistics(IList<WaterfallStats> stats)
         {
             var results = new Dictionary<int, WaterfallStats>();
             for (var index = 0; index < stats.Count; index++)
