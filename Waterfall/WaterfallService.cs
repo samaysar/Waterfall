@@ -6,7 +6,7 @@ using Waterfall.Base;
 namespace Waterfall
 {
     /// <summary>
-    /// A wrapper class is to prepare a solution wide lifetime service which executes
+    /// A wrapper class to offer a solution-lifetime execution of waterfall-pipeline. Enables execution of
     /// waterfalls asynchronously or on thread pool threads.
     /// </summary>
     /// <typeparam name="TInput">Type of Input parameter of the waterfall.</typeparam>
