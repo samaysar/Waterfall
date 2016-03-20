@@ -58,7 +58,7 @@
     <Compile Include="Libs\EnumBased\IWork.cs" />
     <Compile Include="Libs\EnumBased\EnumConverter.cs" />
     <Compile Include="Libs\EnumBased\Waterfall.cs" />
-    <Compile Include="Libs\IntBased\IWork.cs" />
+    <Compile Include="Libs\IntBased\IWaterfallWork.cs" />
     <Compile Include="Libs\IntBased\Waterfall.cs" />
     <Compile Include="Base\WaterfallAttributes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

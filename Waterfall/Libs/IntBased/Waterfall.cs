@@ -22,8 +22,8 @@ namespace Waterfall.Libs.IntBased
         IWaterfall<TInput, TResult> where TOutputMap : class
         where TResult : class
     {
-        private readonly IWaterfallWork<TDependency, TInput, TResult> _waterFallRoot;
-        private readonly IWaterfallWork<TDependency, TInput, TResult>[] _workBranches;
+        private readonly WaterfallWork<TDependency, TInput, TResult> _waterFallRoot;
+        private readonly WaterfallWork<TDependency, TInput, TResult>[] _workBranches;
 
         /// <summary>
         /// Default Ctor.
@@ -33,7 +33,7 @@ namespace Waterfall.Libs.IntBased
         {
             var arraySize = Validate(out _waterFallRoot);
             _waterFallRoot.Init(dependencyContext);
-            _workBranches = new IWaterfallWork<TDependency, TInput, TResult>[arraySize];
+            _workBranches = new WaterfallWork<TDependency, TInput, TResult>[arraySize];
             PopulateWorkBranches(_workBranches, dependencyContext);
             Init(arraySize+1);
         }
@@ -183,7 +183,7 @@ namespace Waterfall.Libs.IntBased
 #endif
         }
 
-        private static int Validate(out IWaterfallWork<TDependency, TInput, TResult> root)
+        private static int Validate(out WaterfallWork<TDependency, TInput, TResult> root)
         {
             var mapType = typeof (TOutputMap);
             if (!mapType.IsClass)
@@ -201,16 +201,16 @@ namespace Waterfall.Libs.IntBased
                 throw new WaterfallException(WaterfallErrorType.WaterfallAttributeSuppliedTypeIsNull,
                     $"Null RootType. Map ({mapType.FullName}) on WaterfallAttribute.");
 
-            if (!typeof (IWaterfallWork<TDependency, TInput, TResult>).IsAssignableFrom(attribute.RootType))
+            if (!typeof (WaterfallWork<TDependency, TInput, TResult>).IsAssignableFrom(attribute.RootType))
                 throw new WaterfallException(WaterfallErrorType.WaterfallWorkIsNotDerivedCorrectly,
                     $"RootType ({attribute.RootType.FullName}) not derived "+
-                    $"from {typeof (IWaterfallWork<TDependency, TInput, TResult>).Name}.");
+                    $"from {typeof (WaterfallWork<TDependency, TInput, TResult>).Name}.");
 
             if (attribute.RootType.GetConstructor(Type.EmptyTypes) == null)
                 throw new WaterfallException(WaterfallErrorType.WaterfallWorkDoesNotDefineDefaultParameterLessCtor,
                     $"Default Ctor missing on {attribute.RootType.FullName}.");
 
-            root = Activator.CreateInstance(attribute.RootType) as IWaterfallWork<TDependency, TInput, TResult>;
+            root = Activator.CreateInstance(attribute.RootType) as WaterfallWork<TDependency, TInput, TResult>;
 
             return ValidateWorkBranches(mapType, attribute.RootType);
         }
@@ -239,11 +239,11 @@ namespace Waterfall.Libs.IntBased
                         $"Null BranchType. Map ({mapType.FullName}) on WaterfallWorkAttribute on "+
                         $"Field ({fieldInfo.Name}).");
 
-                if (!typeof (IWaterfallWork<TDependency, TInput, TResult>).IsAssignableFrom(attribute.WorkType))
+                if (!typeof (WaterfallWork<TDependency, TInput, TResult>).IsAssignableFrom(attribute.WorkType))
                 {
                     throw new WaterfallException(WaterfallErrorType.WaterfallWorkIsNotDerivedCorrectly,
                         $"BranchType ({attribute.WorkType.FullName}) not derived "+
-                        $"from {typeof (IWaterfallWork<TDependency, TInput, TResult>).FullName}.");
+                        $"from {typeof (WaterfallWork<TDependency, TInput, TResult>).FullName}.");
                 }
                 if (!typeSet.Add(attribute.WorkType))
                 {
@@ -271,7 +271,7 @@ namespace Waterfall.Libs.IntBased
             return count;
         }
 
-        private static void PopulateWorkBranches(IList<IWaterfallWork<TDependency, TInput, TResult>> workBranches,
+        private static void PopulateWorkBranches(IList<WaterfallWork<TDependency, TInput, TResult>> workBranches,
             TDependency dependency)
         {
             if (workBranches.Count == 0) return;
@@ -290,12 +290,12 @@ namespace Waterfall.Libs.IntBased
                         $"Map ({mapType.FullName}) for field ({fieldInfo.Name}).");
 
                 var instance =
-                    Activator.CreateInstance(attribute.WorkType) as IWaterfallWork<TDependency, TInput, TResult>;
+                    Activator.CreateInstance(attribute.WorkType) as WaterfallWork<TDependency, TInput, TResult>;
 
                 if (instance == null)
                     throw new WaterfallException(WaterfallErrorType.WaterfallWorkIsNotDerivedCorrectly,
                         $"BranchType ({attribute.WorkType.FullName}) not derived "+
-                        $"from {typeof (IWaterfallWork<TDependency, TInput, TResult>).FullName}.");
+                        $"from {typeof (WaterfallWork<TDependency, TInput, TResult>).FullName}.");
 
                 instance.Init(dependency);
                 var position = (int)fieldInfo.GetValue(null);
