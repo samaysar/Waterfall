@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Waterfall.Base;
 
-namespace Waterfall.Libs.IntBased
+namespace Waterfall.Types.IntBased
 {
     /// <summary>
     /// Class which holds the collection of individual waterfall-work items and calls the waterfall-hierarchy

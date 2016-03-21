@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Waterfall.Libs.EnumBased
+namespace Waterfall.Types.EnumBased
 {
     /// <summary>
     /// Abstract class to be implemented by any enum map based waterfall-work.

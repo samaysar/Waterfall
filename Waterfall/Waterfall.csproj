@@ -55,11 +55,11 @@
     <Compile Include="Base\StatisticsHandler.cs" />
     <Compile Include="Builders\ChainedWaterfall.cs" />
     <Compile Include="Builders\ConcurrentWaterfall.cs" />
-    <Compile Include="Libs\EnumBased\WaterfallWork.cs" />
-    <Compile Include="Libs\EnumBased\EnumConverter.cs" />
-    <Compile Include="Libs\EnumBased\Waterfall.cs" />
-    <Compile Include="Libs\IntBased\WaterfallWork.cs" />
-    <Compile Include="Libs\IntBased\Waterfall.cs" />
+    <Compile Include="Types\EnumBased\WaterfallWork.cs" />
+    <Compile Include="Types\EnumBased\EnumConverter.cs" />
+    <Compile Include="Types\EnumBased\Waterfall.cs" />
+    <Compile Include="Types\IntBased\WaterfallWork.cs" />
+    <Compile Include="Types\IntBased\Waterfall.cs" />
     <Compile Include="Base\WaterfallAttributes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Base\WaterfallException.cs" />

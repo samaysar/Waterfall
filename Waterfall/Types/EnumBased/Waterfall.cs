@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Waterfall.Base;
 
-namespace Waterfall.Libs.EnumBased
+namespace Waterfall.Types.EnumBased
 {
     /// <summary>
     /// Class which holds the collection of individual waterfall-work items and calls the waterfall-hierarchy

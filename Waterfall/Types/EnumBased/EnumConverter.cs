@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Waterfall.Libs.EnumBased
+namespace Waterfall.Types.EnumBased
 {
     /// <summary>
     /// Class to be implemented by user, when using Enum based map to define waterfall, which converts the enum to integer value.

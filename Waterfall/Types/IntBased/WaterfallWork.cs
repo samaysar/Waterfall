@@ -1,6 +1,6 @@
-﻿using Waterfall.Libs.EnumBased;
+﻿using Waterfall.Types.EnumBased;
 
-namespace Waterfall.Libs.IntBased
+namespace Waterfall.Types.IntBased
 {
     /// <summary>
     /// Abstract class to be implemented by any int map based waterfall-work.
