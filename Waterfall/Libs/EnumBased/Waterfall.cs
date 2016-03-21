@@ -14,30 +14,30 @@ namespace Waterfall.Libs.EnumBased
     /// and enum members, except member with value -1, with WaterfallWorkAttribute</para>
     /// <para>Waterfall execution terminates when any work item returns a negative value.</para>
     /// </summary>
+    /// <typeparam name="TEnumMap">Type of the enum which describes the map (waterfall hierarchy)</typeparam>
     /// <typeparam name="TDependency">Type of dependency context instance</typeparam>
-    /// <typeparam name="TOutputEnum">Type of the enum which describes the map (waterfall hierarchy)</typeparam>
     /// <typeparam name="TInput">Type of input instance</typeparam>
     /// <typeparam name="TResult">Type of result instance</typeparam>
-    public sealed class Waterfall<TDependency, TOutputEnum, TInput, TResult> : StatisticsHandler, IWaterfall<TInput, TResult>
-        where TOutputEnum : struct, IComparable, IFormattable, IConvertible
+    public sealed class Waterfall<TEnumMap, TDependency, TInput, TResult> : StatisticsHandler, IWaterfall<TInput, TResult>
+        where TEnumMap : struct, IComparable, IFormattable, IConvertible
         where TResult : class
     {
-        private readonly WaterfallWork<TDependency, TOutputEnum, TInput, TResult> _waterFallRoot;
-        private readonly EnumConverter<TOutputEnum> _enumConvertor;
-        private readonly WaterfallWork<TDependency, TOutputEnum, TInput, TResult>[] _workBranches;
+        private readonly WaterfallWork<TDependency, TEnumMap, TInput, TResult> _waterFallRoot;
+        private readonly EnumConverter<TEnumMap> _enumConvertor;
+        private readonly WaterfallWork<TDependency, TEnumMap, TInput, TResult>[] _workBranches;
 
         /// <summary>
         /// Default Ctor.
         /// </summary>
         /// <param name="dependencyContext">Dependency context instance</param>
         /// <param name="enumConvertor">Enum to int converter instance</param>
-        public Waterfall(TDependency dependencyContext, EnumConverter<TOutputEnum> enumConvertor)
+        public Waterfall(TDependency dependencyContext, EnumConverter<TEnumMap> enumConvertor)
         {
             if (enumConvertor == null) throw new ArgumentNullException(nameof(enumConvertor));
             _enumConvertor = enumConvertor;
             var arraySize = Validate(out _waterFallRoot);
             _waterFallRoot.Init(dependencyContext);
-            _workBranches = new WaterfallWork<TDependency, TOutputEnum, TInput, TResult>[arraySize];
+            _workBranches = new WaterfallWork<TDependency, TEnumMap, TInput, TResult>[arraySize];
             PopulateWorkBranches(_enumConvertor, _workBranches, dependencyContext);
             Init(arraySize + 1);
         }
@@ -92,7 +92,7 @@ namespace Waterfall.Libs.EnumBased
             catch (IndexOutOfRangeException)
             {
                 throw new WaterfallException(WaterfallErrorType.WaterfallNotDefined,
-                    $"Map ({typeof (TOutputEnum)}) does not define work branch with UniqueIdentifier"+
+                    $"Map ({typeof (TEnumMap)}) does not define work branch with UniqueIdentifier"+
                     $" value:{nextWorkIndex}");
             }
             catch (WaterfallException)
@@ -191,9 +191,9 @@ namespace Waterfall.Libs.EnumBased
 #endif
         }
 
-        private static int Validate(out WaterfallWork<TDependency, TOutputEnum, TInput, TResult> root)
+        private static int Validate(out WaterfallWork<TDependency, TEnumMap, TInput, TResult> root)
         {
-            var mapType = typeof(TOutputEnum);
+            var mapType = typeof(TEnumMap);
             if (!mapType.IsEnum)
                 throw new WaterfallException(WaterfallErrorType.UnknownTypeOfWaterfallMap,
                     $"Enum expected as Map. Type:{mapType.FullName}");
@@ -211,10 +211,10 @@ namespace Waterfall.Libs.EnumBased
                 throw new WaterfallException(WaterfallErrorType.WaterfallAttributeSuppliedTypeIsNull,
                     $"Null RootType. Map ({mapType.FullName}) on WaterfallAttribute.");
 
-            if (!typeof(WaterfallWork<TDependency, TOutputEnum, TInput, TResult>).IsAssignableFrom(attribute.RootType))
+            if (!typeof(WaterfallWork<TDependency, TEnumMap, TInput, TResult>).IsAssignableFrom(attribute.RootType))
                 throw new WaterfallException(WaterfallErrorType.WaterfallWorkIsNotDerivedCorrectly,
                     $"RootType ({attribute.RootType.FullName}) not derived "+
-                    $"from {typeof(WaterfallWork<TDependency, TOutputEnum, TInput, TResult>).Name}.");
+                    $"from {typeof(WaterfallWork<TDependency, TEnumMap, TInput, TResult>).Name}.");
 
             if (attribute.RootType.GetConstructor(Type.EmptyTypes) == null)
                 throw new WaterfallException(WaterfallErrorType.WaterfallWorkDoesNotDefineDefaultParameterLessCtor,
@@ -222,7 +222,7 @@ namespace Waterfall.Libs.EnumBased
 
             root =
                 Activator.CreateInstance(attribute.RootType) as
-                    WaterfallWork<TDependency, TOutputEnum, TInput, TResult>;
+                    WaterfallWork<TDependency, TEnumMap, TInput, TResult>;
 
             return ValidateWorkBranches(mapType, attribute.RootType);
         }
@@ -237,7 +237,7 @@ namespace Waterfall.Libs.EnumBased
             if (minValue != -1)
                 throw new WaterfallException(WaterfallErrorType.EnumDoesNotDefineEndOfWaterfallAsMinusOne,
                     $"Map ({mapType.FullName}) ActualMinValue:{minValue},EnumName"+
-                    $":{Enum.GetName(typeof(TOutputEnum), minValue)}.");
+                    $":{Enum.GetName(typeof(TEnumMap), minValue)}.");
             if (intArray.Length != maxValue + 2)
                 throw new WaterfallException(WaterfallErrorType.EnumValuesAreNotContinuouslyIncreasing,
                     $"Map ({mapType.FullName}) ExpectedEnumCount:{maxValue + 2},ActualEnumCount:{intArray.Length}");
@@ -272,12 +272,12 @@ namespace Waterfall.Libs.EnumBased
                         $"Null WorkType. Map ({mapType.FullName}) on WaterfallWorkAttribute on Field ({fieldInfo.Name}).");
 
                 if (
-                    !typeof (WaterfallWork<TDependency, TOutputEnum, TInput, TResult>).IsAssignableFrom(
+                    !typeof (WaterfallWork<TDependency, TEnumMap, TInput, TResult>).IsAssignableFrom(
                         attribute.WorkType))
                 {
                     throw new WaterfallException(WaterfallErrorType.WaterfallWorkIsNotDerivedCorrectly,
                         $"WorkType ({attribute.WorkType.FullName}) not derived "+
-                        $"from {typeof (WaterfallWork<TDependency, TOutputEnum, TInput, TResult>).FullName}.");
+                        $"from {typeof (WaterfallWork<TDependency, TEnumMap, TInput, TResult>).FullName}.");
                 }
                 if (!typeSet.Add(attribute.WorkType))
                 {
@@ -288,12 +288,12 @@ namespace Waterfall.Libs.EnumBased
             return maxValue + 1;
         }
 
-        private static void PopulateWorkBranches(EnumConverter<TOutputEnum> enumConvertor,
-            IList<WaterfallWork<TDependency, TOutputEnum, TInput, TResult>> workBranches,
+        private static void PopulateWorkBranches(EnumConverter<TEnumMap> enumConvertor,
+            IList<WaterfallWork<TDependency, TEnumMap, TInput, TResult>> workBranches,
             TDependency dependency)
         {
             if (workBranches.Count == 0) return;
-            var mapType = typeof(TOutputEnum);
+            var mapType = typeof(TEnumMap);
 
             foreach (
                 var fieldInfo in mapType.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public|BindingFlags.NonPublic))
@@ -308,15 +308,15 @@ namespace Waterfall.Libs.EnumBased
                         $" ({mapType.FullName}) for field ({fieldInfo.Name}).");
 
                 var instance =
-                    Activator.CreateInstance(attribute.WorkType) as WaterfallWork<TDependency, TOutputEnum, TInput, TResult>;
+                    Activator.CreateInstance(attribute.WorkType) as WaterfallWork<TDependency, TEnumMap, TInput, TResult>;
 
                 if (instance == null)
                     throw new WaterfallException(WaterfallErrorType.WaterfallWorkIsNotDerivedCorrectly,
                         $"WorkType ({attribute.WorkType.FullName}) not derived "+
-                        $"from {typeof(WaterfallWork<TDependency, TOutputEnum, TInput, TResult>).FullName}.");
+                        $"from {typeof(WaterfallWork<TDependency, TEnumMap, TInput, TResult>).FullName}.");
 
                 instance.Init(dependency);
-                var instanceIndex = enumConvertor.ToInt((TOutputEnum)fieldInfo.GetValue(null));
+                var instanceIndex = enumConvertor.ToInt((TEnumMap)fieldInfo.GetValue(null));
                 if (workBranches[instanceIndex] == null)
                 {
                     workBranches[instanceIndex] = instance;

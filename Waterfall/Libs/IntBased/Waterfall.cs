@@ -14,12 +14,12 @@ namespace Waterfall.Libs.IntBased
     /// and its const int fields, except member with negative values, with WaterfallWorkAttribute</para>
     /// <para>Waterfall execution terminates when any work item returns a negative value.</para>
     /// </summary>
+    /// <typeparam name="TMap">Type of the class which describes the map (waterfall hierarchy)</typeparam>
     /// <typeparam name="TDependency">Type of dependency context instance</typeparam>
-    /// <typeparam name="TOutputMap">Type of the class which describes the map (waterfall hierarchy)</typeparam>
     /// <typeparam name="TInput">Type of input instance</typeparam>
     /// <typeparam name="TResult">Type of result instance</typeparam>
-    public sealed class Waterfall<TDependency, TOutputMap, TInput, TResult> : StatisticsHandler,
-        IWaterfall<TInput, TResult> where TOutputMap : class
+    public sealed class Waterfall<TMap, TDependency, TInput, TResult> : StatisticsHandler,
+        IWaterfall<TInput, TResult> where TMap : class
         where TResult : class
     {
         private readonly WaterfallWork<TDependency, TInput, TResult> _waterFallRoot;
@@ -88,7 +88,7 @@ namespace Waterfall.Libs.IntBased
             catch (IndexOutOfRangeException)
             {
                 throw new WaterfallException(WaterfallErrorType.WaterfallNotDefined,
-                    $"Map ({typeof (TOutputMap)}) does not define work branch with UniqueIdentifier "+
+                    $"Map ({typeof (TMap)}) does not define work branch with UniqueIdentifier "+
                     $"value:{nextWorkIndex}");
             }
             catch (WaterfallException)
@@ -189,7 +189,7 @@ namespace Waterfall.Libs.IntBased
 
         private static int Validate(out WaterfallWork<TDependency, TInput, TResult> root)
         {
-            var mapType = typeof (TOutputMap);
+            var mapType = typeof (TMap);
             if (!mapType.IsClass)
                 throw new WaterfallException(WaterfallErrorType.UnknownTypeOfWaterfallMap,
                     $"Class expected as Map. Type:{mapType.FullName}");
@@ -281,7 +281,7 @@ namespace Waterfall.Libs.IntBased
             TDependency dependency)
         {
             if (workBranches.Count == 0) return;
-            var mapType = typeof (TOutputMap);
+            var mapType = typeof (TMap);
 
             foreach (
                 var fieldInfo in mapType.GetFields(BindingFlags.DeclaredOnly|BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic))
