@@ -1,6 +1,6 @@
 ﻿/*
 This code is based on the work presented by Thomas Kejser (http://kejser.org/thomas-kejser-biography/)
-in a series of blog entries:
+in a series of his blog entries:
 Part 1: http://kejser.org/synchronisation-in-net-part-1-lock-dictionaries-and-arrays/
 Part 2: http://blog.kejser.org/synchronisation-in-net-part-2-unsafe-data-structure-and-padding/
 Part 3: http://kejser.org/synchronisation-in-net-part-3-spinlocks-and-interlocks/
@@ -102,25 +102,29 @@ namespace Waterfall.Base
         protected unsafe void AddStats(int workPosition, long timeInTicks)
         {
 #if WATERFALLSTATS_ON
-            if (!_knowsCore)
+            try {}
+            finally
             {
-                _cpuIndex = GetCurrentProcessorNumber();
-                _knowsCore = true;
-            }
-            fixed (WorkStats* s = &_stats[_cpuIndex, workPosition])
-            {
-                //These 2 are crucial info
-                Interlocked.Add(ref s->TimeTicks, timeInTicks);
-                Interlocked.Add(ref s->Count, 1L);
-
-                //avoiding CAS with LOOP for these 2
-                if (s->MinTimeTicks>timeInTicks)
+                if (!_knowsCore)
                 {
-                    Interlocked.Exchange(ref s->MinTimeTicks, timeInTicks);
+                    _cpuIndex = GetCurrentProcessorNumber();
+                    _knowsCore = true;
                 }
-                if (s->MaxTimeTicks<timeInTicks)
+                fixed (WorkStats* s = &_stats[_cpuIndex, workPosition])
                 {
-                    Interlocked.Exchange(ref s->MaxTimeTicks, timeInTicks);
+                    //These 2 are crucial info
+                    Interlocked.Add(ref s->TimeTicks, timeInTicks);
+                    Interlocked.Add(ref s->Count, 1L);
+
+                    //avoiding CAS with LOOP for these 2
+                    if (s->MinTimeTicks>timeInTicks)
+                    {
+                        Interlocked.Exchange(ref s->MinTimeTicks, timeInTicks);
+                    }
+                    if (s->MaxTimeTicks<timeInTicks)
+                    {
+                        Interlocked.Exchange(ref s->MaxTimeTicks, timeInTicks);
+                    }
                 }
             }
 #endif
