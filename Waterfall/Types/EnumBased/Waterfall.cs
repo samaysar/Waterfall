@@ -14,7 +14,7 @@ namespace Waterfall.Types.EnumBased
     /// and enum members, except member with value -1, with WaterfallWorkAttribute</para>
     /// <para>Waterfall execution terminates when any work item returns a negative value.</para>
     /// </summary>
-    /// <typeparam name="TEnumMap">Type of the enum which describes the map (waterfall hierarchy)</typeparam>
+    /// <typeparam name="TEnumMap">Type of the user-define enum (derived from int) which describes the map (waterfall hierarchy)</typeparam>
     /// <typeparam name="TDependency">Type of dependency context instance</typeparam>
     /// <typeparam name="TInput">Type of input instance</typeparam>
     /// <typeparam name="TResult">Type of result instance</typeparam>
@@ -30,7 +30,7 @@ namespace Waterfall.Types.EnumBased
         /// Default Ctor.
         /// </summary>
         /// <param name="dependencyContext">Dependency context instance</param>
-        /// <param name="enumConvertor">Enum to int converter instance</param>
+        /// <param name="enumConvertor">Instance of Enum to int converter</param>
         public Waterfall(TDependency dependencyContext, EnumConverter<TEnumMap> enumConvertor)
         {
             if (enumConvertor == null) throw new ArgumentNullException(nameof(enumConvertor));
