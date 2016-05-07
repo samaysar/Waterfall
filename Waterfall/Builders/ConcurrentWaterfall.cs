@@ -14,8 +14,7 @@ namespace Waterfall.Builders
     /// </summary>
     /// <typeparam name="TInput">Type of input parameter of waterfalls.</typeparam>
     /// <typeparam name="TResult">Type of result parameter of waterfalls.</typeparam>
-    public sealed class ConcurrentWaterfall<TInput, TResult> : IWaterfall<TInput, TResult>
-        where TResult : class
+    public sealed class ConcurrentWaterfall<TInput, TResult> : IWaterfall<TInput, TResult> where TResult : class
     {
         private readonly IWaterfall<TInput, TResult>[] _waterfall;
 

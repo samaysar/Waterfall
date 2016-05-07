@@ -10,13 +10,11 @@ namespace Waterfall.Builders
     /// </summary>
     /// <typeparam name="TInput">Type of input parameter of waterfalls.</typeparam>
     /// <typeparam name="TResult">Type of result parameter of waterfalls.</typeparam>
-    public sealed class ChainedWaterfall<TInput, TResult> : IWaterfall<TInput, TResult>
-        where TResult : class
+    public sealed class ChainedWaterfall<TInput, TResult> : IWaterfall<TInput, TResult> where TResult : class
     {
         private readonly IWaterfall<TInput, TResult>[] _waterfall;
 
-        private ChainedWaterfall(ChainedWaterfall<TInput, TResult> current,
-            IWaterfall<TInput, TResult> nextWaterfall)
+        private ChainedWaterfall(ChainedWaterfall<TInput, TResult> current, IWaterfall<TInput, TResult> nextWaterfall)
         {
             if (nextWaterfall == null) throw new ArgumentNullException(nameof(nextWaterfall));
             _waterfall = new IWaterfall<TInput, TResult>[current._waterfall.Length+1];
@@ -32,8 +30,7 @@ namespace Waterfall.Builders
         /// </summary>
         /// <param name="waterfallHead">First link in the waterfall chain, i.e. execution will start at this waterfall.</param>
         /// <param name="nextWaterfall">Next waterfall in the chain.</param>
-        public ChainedWaterfall(IWaterfall<TInput, TResult> waterfallHead,
-            IWaterfall<TInput, TResult> nextWaterfall)
+        public ChainedWaterfall(IWaterfall<TInput, TResult> waterfallHead, IWaterfall<TInput, TResult> nextWaterfall)
         {
             if (waterfallHead == null) throw new ArgumentNullException(nameof(waterfallHead));
             if (nextWaterfall == null) throw new ArgumentNullException(nameof(nextWaterfall));
