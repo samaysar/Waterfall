@@ -39,7 +39,7 @@ namespace Waterfall.Types.EnumBased
             Expression<Func<TEnumMap, int>> expr = x => (int)(object)x;
             _enumConvertor = expr.Compile();
             PopulateWorkBranches(_enumConvertor, _workBranches, dependencyContext);
-            Init(arraySize + 1);
+            Init(arraySize + 2);
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Waterfall.Types.EnumBased
             var sw = Stopwatch.StartNew();
             var nextWorkIndex = _enumConvertor(_waterFallRoot.ExecuteWork(input, result));
             sw.Stop();
-            AddStats(0, sw.ElapsedTicks);
+            AddStats(1, sw.ElapsedTicks);
 #else
             var nextWorkIndex = _enumConvertor.ToInt(_waterFallRoot.ExecuteWork(input, result));
 #endif
@@ -75,7 +75,7 @@ namespace Waterfall.Types.EnumBased
                     var prevIndex = nextWorkIndex;
                     nextWorkIndex = _enumConvertor(_workBranches[prevIndex].ExecuteWork(input, result));
                     sw.Stop();
-                    AddStats(prevIndex+1, sw.ElapsedTicks);
+                    AddStats(prevIndex+2, sw.ElapsedTicks);
 #else
                     nextWorkIndex = _enumConvertor.ToInt(_workBranches[nextWorkIndex].ExecuteWork(input, result));
 #endif
@@ -121,7 +121,7 @@ namespace Waterfall.Types.EnumBased
         private static Dictionary<int, WaterfallStats> Statistics(IList<WaterfallStats> stats)
         {
             var results = new Dictionary<int, WaterfallStats>();
-            for (var index = 0; index < stats.Count; index++)
+            for (var index = 1; index < stats.Count; index++)
             {
                 var indexedStats = stats[index];
                 if (indexedStats.Count > 0)
@@ -136,7 +136,7 @@ namespace Waterfall.Types.EnumBased
                     indexedStats.MaxTimeMs =
                         indexedStats.MinTimeMs = indexedStats.AvgTimeInMs = indexedStats.TotalTimeInMs = 0;
                 }
-                results.Add(index - 1, indexedStats);
+                results.Add(index - 2, indexedStats);
             }
             return results;
         }
@@ -173,7 +173,7 @@ namespace Waterfall.Types.EnumBased
                     $"{workuniqueUniqueIdentifier} is invalid. Provide values between -1 and {_workBranches.Length - 1}");
             }
 #if WATERFALLSTATS_ON
-            var stats = WorkStatistics(workuniqueUniqueIdentifier + 1);
+            var stats = WorkStatistics(workuniqueUniqueIdentifier + 2);
             if (stats.Count > 0)
             {
                 stats.TotalTimeInMs = stats.TotalTimeInMs / Stopwatch.Frequency * 1000;
