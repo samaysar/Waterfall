@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using Waterfall.Base;
 
@@ -23,21 +24,20 @@ namespace Waterfall.Types.EnumBased
         where TResult : class
     {
         private readonly WaterfallWork<TDependency, TEnumMap, TInput, TResult> _waterFallRoot;
-        private readonly EnumConverter<TEnumMap> _enumConvertor;
+        private readonly Func<TEnumMap, int> _enumConvertor;
         private readonly WaterfallWork<TDependency, TEnumMap, TInput, TResult>[] _workBranches;
 
         /// <summary>
         /// Default Ctor.
         /// </summary>
         /// <param name="dependencyContext">Dependency context instance</param>
-        /// <param name="enumConvertor">Instance of Enum to int converter</param>
-        public Waterfall(TDependency dependencyContext, EnumConverter<TEnumMap> enumConvertor)
+        public Waterfall(TDependency dependencyContext)
         {
-            if (enumConvertor == null) throw new ArgumentNullException(nameof(enumConvertor));
-            _enumConvertor = enumConvertor;
             var arraySize = Validate(out _waterFallRoot);
             _waterFallRoot.Init(dependencyContext);
             _workBranches = new WaterfallWork<TDependency, TEnumMap, TInput, TResult>[arraySize];
+            Expression<Func<TEnumMap, int>> expr = x => (int)(object)x;
+            _enumConvertor = expr.Compile();
             PopulateWorkBranches(_enumConvertor, _workBranches, dependencyContext);
             Init(arraySize + 1);
         }
@@ -57,7 +57,7 @@ namespace Waterfall.Types.EnumBased
 #endif
 #if WATERFALLSTATS_ON
             var sw = Stopwatch.StartNew();
-            var nextWorkIndex = _enumConvertor.ToInt(_waterFallRoot.ExecuteWork(input, result));
+            var nextWorkIndex = _enumConvertor(_waterFallRoot.ExecuteWork(input, result));
             sw.Stop();
             AddStats(0, sw.ElapsedTicks);
 #else
@@ -73,7 +73,7 @@ namespace Waterfall.Types.EnumBased
 #if WATERFALLSTATS_ON
                     sw.Restart();
                     var prevIndex = nextWorkIndex;
-                    nextWorkIndex = _enumConvertor.ToInt(_workBranches[prevIndex].ExecuteWork(input, result));
+                    nextWorkIndex = _enumConvertor(_workBranches[prevIndex].ExecuteWork(input, result));
                     sw.Stop();
                     AddStats(prevIndex+1, sw.ElapsedTicks);
 #else
@@ -288,7 +288,7 @@ namespace Waterfall.Types.EnumBased
             return maxValue + 1;
         }
 
-        private static void PopulateWorkBranches(EnumConverter<TEnumMap> enumConvertor,
+        private static void PopulateWorkBranches(Func<TEnumMap, int> enumConvertor,
             IList<WaterfallWork<TDependency, TEnumMap, TInput, TResult>> workBranches,
             TDependency dependency)
         {
@@ -316,7 +316,7 @@ namespace Waterfall.Types.EnumBased
                         $"from {typeof(WaterfallWork<TDependency, TEnumMap, TInput, TResult>).FullName}.");
 
                 instance.Init(dependency);
-                var instanceIndex = enumConvertor.ToInt((TEnumMap)fieldInfo.GetValue(null));
+                var instanceIndex = enumConvertor((TEnumMap)fieldInfo.GetValue(null));
                 if (workBranches[instanceIndex] == null)
                 {
                     workBranches[instanceIndex] = instance;

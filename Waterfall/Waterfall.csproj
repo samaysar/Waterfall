@@ -56,7 +56,6 @@
     <Compile Include="Builders\ChainedWaterfall.cs" />
     <Compile Include="Builders\ConcurrentWaterfall.cs" />
     <Compile Include="Types\EnumBased\WaterfallWork.cs" />
-    <Compile Include="Types\EnumBased\EnumConverter.cs" />
     <Compile Include="Types\EnumBased\Waterfall.cs" />
     <Compile Include="Types\IntBased\WaterfallWork.cs" />
     <Compile Include="Types\IntBased\Waterfall.cs" />
